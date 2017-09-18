@@ -30,9 +30,7 @@ var {
   WebView,
   requireNativeComponent,
   UIManager,
-  NativeModules: {
-    WebViewBridgeManager
-  }
+  NativeModules: { WebViewBridgeManager }
 } = ReactNative;
 import PropTypes from 'prop-types';
 
@@ -44,7 +42,7 @@ var RCTWebViewBridgeManager = WebViewBridgeManager;
 var WebViewBridgeState = keyMirror({
   IDLE: null,
   LOADING: null,
-  ERROR: null,
+  ERROR: null
 });
 
 var NavigationType = {
@@ -53,38 +51,30 @@ var NavigationType = {
   backforward: RCTWebViewBridgeManager.NavigationType.BackForward,
   reload: RCTWebViewBridgeManager.NavigationType.Reload,
   formresubmit: RCTWebViewBridgeManager.NavigationType.FormResubmitted,
-  other: RCTWebViewBridgeManager.NavigationType.Other,
+  other: RCTWebViewBridgeManager.NavigationType.Other
 };
 
 var JSNavigationScheme = RCTWebViewBridgeManager.JSNavigationScheme;
 
 type ErrorEvent = {
-  domain: any;
-  code: any;
-  description: any;
-}
+  domain: any,
+  code: any,
+  description: any
+};
 
 type Event = Object;
 
 var defaultRenderLoading = () => (
   <View style={styles.loadingView}>
-    <ActivityIndicator/>
+    <ActivityIndicator />
   </View>
 );
 var defaultRenderError = (errorDomain, errorCode, errorDesc) => (
   <View style={styles.errorContainer}>
-    <Text style={styles.errorTextTitle}>
-      Error loading page
-    </Text>
-    <Text style={styles.errorText}>
-      {'Domain: ' + errorDomain}
-    </Text>
-    <Text style={styles.errorText}>
-      {'Error Code: ' + errorCode}
-    </Text>
-    <Text style={styles.errorText}>
-      {'Description: ' + errorDesc}
-    </Text>
+    <Text style={styles.errorTextTitle}>Error loading page</Text>
+    <Text style={styles.errorText}>{'Domain: ' + errorDomain}</Text>
+    <Text style={styles.errorText}>{'Error Code: ' + errorCode}</Text>
+    <Text style={styles.errorText}>{'Description: ' + errorDesc}</Text>
   </View>
 );
 
@@ -94,8 +84,8 @@ var defaultRenderError = (errorDomain, errorCode, errorDesc) => (
 class WebViewBridge extends Component {
   statics: {
     JSNavigationScheme: JSNavigationScheme,
-    NavigationType: NavigationType,
-  }
+    NavigationType: NavigationType
+  };
 
   constructor() {
     super();
@@ -103,13 +93,13 @@ class WebViewBridge extends Component {
     this.state = {
       viewState: WebViewBridgeState.IDLE,
       lastErrorEvent: (null: ?ErrorEvent),
-      startInLoadingState: true,
-    }
+      startInLoadingState: true
+    };
   }
 
   componentWillMount() {
     if (this.props.startInLoadingState) {
-      this.setState({viewState: WebViewBridgeState.LOADING});
+      this.setState({ viewState: WebViewBridgeState.LOADING });
     }
   }
 
@@ -120,10 +110,7 @@ class WebViewBridge extends Component {
       otherView = (this.props.renderLoading || defaultRenderLoading)();
     } else if (this.state.viewState === WebViewBridgeState.ERROR) {
       var errorEvent = this.state.lastErrorEvent;
-      invariant(
-        errorEvent != null,
-        'lastErrorEvent expected to be non-null'
-      );
+      invariant(errorEvent != null, 'lastErrorEvent expected to be non-null');
       otherView = (this.props.renderError || defaultRenderError)(
         errorEvent.domain,
         errorEvent.code,
@@ -136,25 +123,37 @@ class WebViewBridge extends Component {
     }
 
     var webViewStyles = [styles.container, styles.webView, this.props.style];
-    if (this.state.viewState === WebViewBridgeState.LOADING ||
-      this.state.viewState === WebViewBridgeState.ERROR) {
+    if (
+      this.state.viewState === WebViewBridgeState.LOADING ||
+      this.state.viewState === WebViewBridgeState.ERROR
+    ) {
       // if we're in either LOADING or ERROR states, don't show the webView
       webViewStyles.push(styles.hidden);
     }
 
-    var onShouldStartLoadWithRequest = this.props.onShouldStartLoadWithRequest && ((event: Event) => {
-      var shouldStart = this.props.onShouldStartLoadWithRequest &&
-        this.props.onShouldStartLoadWithRequest(event.nativeEvent);
-      RCTWebViewBridgeManager.startLoadWithResult(!!shouldStart, event.nativeEvent.lockIdentifier);
-    });
+    var onShouldStartLoadWithRequest =
+      this.props.onShouldStartLoadWithRequest &&
+      ((event: Event) => {
+        var shouldStart =
+          this.props.onShouldStartLoadWithRequest &&
+          this.props.onShouldStartLoadWithRequest(event.nativeEvent);
+        RCTWebViewBridgeManager.startLoadWithResult(
+          !!shouldStart,
+          event.nativeEvent.lockIdentifier
+        );
+      });
 
-    var {javaScriptEnabled, domStorageEnabled} = this.props;
+    var { javaScriptEnabled, domStorageEnabled } = this.props;
     if (this.props.javaScriptEnabledAndroid) {
-      console.warn('javaScriptEnabledAndroid is deprecated. Use javaScriptEnabled instead');
+      console.warn(
+        'javaScriptEnabledAndroid is deprecated. Use javaScriptEnabled instead'
+      );
       javaScriptEnabled = this.props.javaScriptEnabledAndroid;
     }
     if (this.props.domStorageEnabledAndroid) {
-      console.warn('domStorageEnabledAndroid is deprecated. Use domStorageEnabled instead');
+      console.warn(
+        'domStorageEnabledAndroid is deprecated. Use domStorageEnabled instead'
+      );
       domStorageEnabled = this.props.domStorageEnabledAndroid;
     }
 
@@ -162,17 +161,17 @@ class WebViewBridge extends Component {
       const onBridgeMessageCallback = this.props.onBridgeMessage;
       if (onBridgeMessageCallback) {
         const messages = event.nativeEvent.messages;
-        messages.forEach((message) => {
+        messages.forEach(message => {
           onBridgeMessageCallback(message);
         });
       }
     };
 
-    let {source, ...props} = {...this.props};
+    let { source, ...props } = { ...this.props };
     delete props.onBridgeMessage;
     delete props.onShouldStartLoadWithRequest;
 
-    var webView =
+    var webView = (
       <RCTWebViewBridge
         ref={RCT_WEBVIEWBRIDGE_REF}
         key="webViewKey"
@@ -184,7 +183,8 @@ class WebViewBridge extends Component {
         onLoadingError={this.onLoadingError}
         onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
         onBridgeMessage={onBridgeMessage}
-      />;
+      />
+    );
 
     return (
       <View style={styles.container}>
@@ -194,57 +194,52 @@ class WebViewBridge extends Component {
     );
   }
 
-  goForward() {
+  goForward = () =>
     UIManager.dispatchViewManagerCommand(
       this.getWebViewBridgeHandle(),
       UIManager.RCTWebViewBridge.Commands.goForward,
       null
     );
-  }
 
-  goBack() {
+  goBack = () =>
     UIManager.dispatchViewManagerCommand(
       this.getWebViewBridgeHandle(),
       UIManager.RCTWebViewBridge.Commands.goBack,
       null
     );
-  }
 
-  reload() {
+  reload = () =>
     UIManager.dispatchViewManagerCommand(
       this.getWebViewBridgeHandle(),
       UIManager.RCTWebViewBridge.Commands.reload,
       null
     );
-  }
 
-  sendToBridge (message: string) {
+  sendToBridge = (message: string) =>
     WebViewBridgeManager.sendToBridge(this.getWebViewBridgeHandle(), message);
-  }
 
   /**
    * We return an event with a bunch of fields including:
    *  url, title, loading, canGoBack, canGoForward
    */
-  updateNavigationState(event: Event) {
+  updateNavigationState = (event: Event) => {
     if (this.props.onNavigationStateChange) {
       this.props.onNavigationStateChange(event.nativeEvent);
     }
-  }
+  };
 
-  getWebViewBridgeHandle(): any {
-    return ReactNative.findNodeHandle(this.refs[RCT_WEBVIEWBRIDGE_REF]);
-  }
+  getWebViewBridgeHandle = (): any =>
+    ReactNative.findNodeHandle(this.refs[RCT_WEBVIEWBRIDGE_REF]);
 
-  onLoadingStart(event: Event) {
+  onLoadingStart = (event: Event) => {
     var onLoadStart = this.props.onLoadStart;
     onLoadStart && onLoadStart(event);
     this.updateNavigationState(event);
-  }
+  };
 
-  onLoadingError(event: Event) {
+  onLoadingError = (event: Event) => {
     event.persist(); // persist this event because we need to store it
-    var {onError, onLoadEnd} = this.props;
+    var { onError, onLoadEnd } = this.props;
     onError && onError(event);
     onLoadEnd && onLoadEnd(event);
     console.warn('Encountered an error loading page', event.nativeEvent);
@@ -253,18 +248,18 @@ class WebViewBridge extends Component {
       lastErrorEvent: event.nativeEvent,
       viewState: WebViewBridgeState.ERROR
     });
-  }
+  };
 
-  onLoadingFinish(event: Event) {
-    var {onLoad, onLoadEnd} = this.props;
+  onLoadingFinish = (event: Event) => {
+    var { onLoad, onLoadEnd } = this.props;
     onLoad && onLoad(event);
     onLoadEnd && onLoadEnd(event);
     this.setState({
-      viewState: WebViewBridgeState.IDLE,
+      viewState: WebViewBridgeState.IDLE
     });
     this.updateNavigationState(event);
-  }
-};
+  };
+}
 
 WebViewBridge.propTypes = {
   ...WebView.propTypes,
@@ -276,49 +271,53 @@ WebViewBridge.propTypes = {
 
   hideKeyboardAccessoryView: PropTypes.bool,
 
-  keyboardDisplayRequiresUserAction: PropTypes.bool,
+  keyboardDisplayRequiresUserAction: PropTypes.bool
 };
 
-var RCTWebViewBridge = requireNativeComponent('RCTWebViewBridge', WebViewBridge, {
-  nativeOnly: {
-    onLoadingStart: true,
-    onLoadingError: true,
-    onLoadingFinish: true,
-  },
-});
+var RCTWebViewBridge = requireNativeComponent(
+  'RCTWebViewBridge',
+  WebViewBridge,
+  {
+    nativeOnly: {
+      onLoadingStart: true,
+      onLoadingError: true,
+      onLoadingFinish: true
+    }
+  }
+);
 
 var styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: BGWASH,
+    backgroundColor: BGWASH
   },
   errorText: {
     fontSize: 14,
     textAlign: 'center',
-    marginBottom: 2,
+    marginBottom: 2
   },
   errorTextTitle: {
     fontSize: 15,
     fontWeight: '500',
-    marginBottom: 10,
+    marginBottom: 10
   },
   hidden: {
     height: 0,
-    flex: 0, // disable 'flex:1' when hiding a View
+    flex: 0 // disable 'flex:1' when hiding a View
   },
   loadingView: {
     backgroundColor: BGWASH,
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   webView: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#ffffff'
   }
 });
 

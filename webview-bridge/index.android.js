@@ -30,9 +30,7 @@ var {
   WebView,
   requireNativeComponent,
   DeviceEventEmitter,
-  NativeModules: {
-    WebViewBridgeManager
-  }
+  NativeModules: { WebViewBridgeManager }
 } = ReactNative;
 import PropTypes from 'prop-types';
 
@@ -41,28 +39,30 @@ var RCT_WEBVIEWBRIDGE_REF = 'webviewbridge';
 var WebViewBridgeState = keyMirror({
   IDLE: null,
   LOADING: null,
-  ERROR: null,
+  ERROR: null
 });
 
-var RCTWebViewBridge = requireNativeComponent('RCTWebViewBridge', WebViewBridge);
+var RCTWebViewBridge = requireNativeComponent(
+  'RCTWebViewBridge',
+  WebViewBridge
+);
 
 /**
  * Renders a native WebView.
  */
-class WebViewBridge extends Component{
-
+class WebViewBridge extends Component {
   constructor() {
     super();
 
     this.state = {
       viewState: WebViewBridgeState.IDLE,
       lastErrorEvent: null,
-      startInLoadingState: true,
-    }
+      startInLoadingState: true
+    };
   }
 
   componentWillMount() {
-    DeviceEventEmitter.addListener("webViewBridgeMessage", (body) => {
+    DeviceEventEmitter.addListener('webViewBridgeMessage', body => {
       const { onBridgeMessage } = this.props;
       const message = body.message;
       if (onBridgeMessage) {
@@ -71,49 +71,60 @@ class WebViewBridge extends Component{
     });
 
     if (this.props.startInLoadingState) {
-      this.setState({viewState: WebViewBridgeState.LOADING});
+      this.setState({ viewState: WebViewBridgeState.LOADING });
     }
   }
 
   render() {
     var otherView = null;
 
-   if (this.state.viewState === WebViewBridgeState.LOADING) {
+    if (this.state.viewState === WebViewBridgeState.LOADING) {
       otherView = this.props.renderLoading && this.props.renderLoading();
     } else if (this.state.viewState === WebViewBridgeState.ERROR) {
       var errorEvent = this.state.lastErrorEvent;
-      otherView = this.props.renderError && this.props.renderError(
-        errorEvent.domain,
-        errorEvent.code,
-        errorEvent.description);
+      otherView =
+        this.props.renderError &&
+        this.props.renderError(
+          errorEvent.domain,
+          errorEvent.code,
+          errorEvent.description
+        );
     } else if (this.state.viewState !== WebViewBridgeState.IDLE) {
-      console.error('RCTWebViewBridge invalid state encountered: ' + this.state.loading);
+      console.error(
+        'RCTWebViewBridge invalid state encountered: ' + this.state.loading
+      );
     }
 
     var webViewStyles = [styles.container, this.props.style];
-    if (this.state.viewState === WebViewBridgeState.LOADING ||
-      this.state.viewState === WebViewBridgeState.ERROR) {
+    if (
+      this.state.viewState === WebViewBridgeState.LOADING ||
+      this.state.viewState === WebViewBridgeState.ERROR
+    ) {
       // if we're in either LOADING or ERROR states, don't show the webView
       webViewStyles.push(styles.hidden);
     }
 
-    var {javaScriptEnabled, domStorageEnabled} = this.props;
+    var { javaScriptEnabled, domStorageEnabled } = this.props;
     if (this.props.javaScriptEnabledAndroid) {
-      console.warn('javaScriptEnabledAndroid is deprecated. Use javaScriptEnabled instead');
+      console.warn(
+        'javaScriptEnabledAndroid is deprecated. Use javaScriptEnabled instead'
+      );
       javaScriptEnabled = this.props.javaScriptEnabledAndroid;
     }
     if (this.props.domStorageEnabledAndroid) {
-      console.warn('domStorageEnabledAndroid is deprecated. Use domStorageEnabled instead');
+      console.warn(
+        'domStorageEnabledAndroid is deprecated. Use domStorageEnabled instead'
+      );
       domStorageEnabled = this.props.domStorageEnabledAndroid;
     }
 
-    let {source, ...props} = {...this.props};
+    let { source, ...props } = { ...this.props };
 
-    var webView =
+    var webView = (
       <RCTWebViewBridge
         ref={RCT_WEBVIEWBRIDGE_REF}
         key="webViewKey"
- 				javaScriptEnabled={true}
+        javaScriptEnabled={true}
         {...props}
         source={resolveAssetSource(source)}
         style={webViewStyles}
@@ -121,7 +132,8 @@ class WebViewBridge extends Component{
         onLoadingFinish={this.onLoadingFinish}
         onLoadingError={this.onLoadingError}
         onChange={this.onMessage}
-      />;
+      />
+    );
 
     return (
       <View style={styles.container}>
@@ -131,67 +143,62 @@ class WebViewBridge extends Component{
     );
   }
 
-  onMessage(event) {
+  onMessage = event => {
     if (this.props.onBridgeMessage != null && event.nativeEvent != null) {
-      this.props.onBridgeMessage(event.nativeEvent.message)
+      this.props.onBridgeMessage(event.nativeEvent.message);
     }
-  }
+  };
 
-  goForward() {
+  goForward = () =>
     UIManager.dispatchViewManagerCommand(
       this.getWebViewBridgeHandle(),
       UIManager.RCTWebViewBridge.Commands.goForward,
       null
     );
-  }
 
-  goBack() {
+  goBack = () =>
     UIManager.dispatchViewManagerCommand(
       this.getWebViewBridgeHandle(),
       UIManager.RCTWebViewBridge.Commands.goBack,
       null
     );
-  }
 
-  reload() {
+  reload = () =>
     UIManager.dispatchViewManagerCommand(
       this.getWebViewBridgeHandle(),
       UIManager.RCTWebViewBridge.Commands.reload,
       null
     );
-  }
 
-  sendToBridge (message: string) {
+  sendToBridge = (message: string) =>
     UIManager.dispatchViewManagerCommand(
       this.getWebViewBridgeHandle(),
       UIManager.RCTWebViewBridge.Commands.sendToBridge,
       [message]
     );
-  }
 
   /**
    * We return an event with a bunch of fields including:
    *  url, title, loading, canGoBack, canGoForward
    */
-  updateNavigationState(event) {
+  updateNavigationState = event => {
     if (this.props.onNavigationStateChange) {
       this.props.onNavigationStateChange(event.nativeEvent);
     }
-  }
+  };
 
-  getWebViewBridgeHandle() {
-    return ReactNative.findNodeHandle(this.refs[RCT_WEBVIEWBRIDGE_REF]);
-  }
+  getWebViewBridgeHandle = () =>
+    ReactNative.findNodeHandle(this.refs[RCT_WEBVIEWBRIDGE_REF]);
 
-  onLoadingStart(event) {
+  onLoadingStart = event => {
     var onLoadStart = this.props.onLoadStart;
     onLoadStart && onLoadStart(event);
     this.updateNavigationState(event);
-  }
+  };
 
-  onLoadingError(event) {
+  onLoadingError = event => {
     event.persist(); // persist this event because we need to store it
-    var {onError, onLoadEnd} = this.props;
+    var { onError, onLoadEnd } = this.props;
     onError && onError(event);
     onLoadEnd && onLoadEnd(event);
 
@@ -199,18 +206,18 @@ class WebViewBridge extends Component{
       lastErrorEvent: event.nativeEvent,
       viewState: WebViewBridgeState.ERROR
     });
-  }
+  };
 
-  onLoadingFinish(event) {
-    var {onLoad, onLoadEnd} = this.props;
+  onLoadingFinish = event => {
+    var { onLoad, onLoadEnd } = this.props;
     onLoad && onLoad(event);
     onLoadEnd && onLoadEnd(event);
     this.setState({
-      viewState: WebViewBridgeState.IDLE,
+      viewState: WebViewBridgeState.IDLE
     });
     this.updateNavigationState(event);
-  }
-};
+  };
+}
 
 WebViewBridge.propTypes = {
   ...RCTWebViewBridge.propTypes,
@@ -218,17 +225,17 @@ WebViewBridge.propTypes = {
   /**
    * Will be called once the message is being sent from webview
    */
-  onBridgeMessage: PropTypes.func,
+  onBridgeMessage: PropTypes.func
 };
 
 var styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   hidden: {
     height: 0,
-    flex: 0, // disable 'flex:1' when hiding a View
-  },
+    flex: 0 // disable 'flex:1' when hiding a View
+  }
 });
 
 module.exports = WebViewBridge;
