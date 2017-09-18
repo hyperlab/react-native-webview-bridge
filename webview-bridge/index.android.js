@@ -51,15 +51,16 @@ var RCTWebViewBridge = requireNativeComponent('RCTWebViewBridge', WebViewBridge)
  */
 class WebViewBridge extends Component{
 
-  getInitialState() {
-    return {
+  constructor() {
+    super();
+
+    this.state = {
       viewState: WebViewBridgeState.IDLE,
       lastErrorEvent: null,
       startInLoadingState: true,
-    };
+    }
   }
 
-  
   componentWillMount() {
     DeviceEventEmitter.addListener("webViewBridgeMessage", (body) => {
       const { onBridgeMessage } = this.props;

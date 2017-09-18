@@ -97,12 +97,14 @@ class WebViewBridge extends Component {
     NavigationType: NavigationType,
   }
 
-  getInitialState() {
-    return {
+  constructor() {
+    super();
+
+    this.state = {
       viewState: WebViewBridgeState.IDLE,
       lastErrorEvent: (null: ?ErrorEvent),
       startInLoadingState: true,
-    };
+    }
   }
 
   componentWillMount() {
